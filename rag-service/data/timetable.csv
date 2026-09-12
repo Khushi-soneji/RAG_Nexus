@@ -1,0 +1,39 @@
+semester,division,day,start_time,end_time,subject_code,subject,faculty,room,class_type
+5,A,Monday,12:30,13:20,2601503,Probability and Statistics,Prof. Drashti Makwana,510,Lecture
+5,A,Monday,13:20,14:10,2601501,Compiler Design,Ms. Shivangi Gandhi,510,Lecture
+5,A,Monday,14:15,15:05,2601505,Python Programming Laboratory,Ms. Yesha Patel,LAB 2,Lab
+5,A,Monday,14:15,15:05,2603532,Digital Image and Video Processing Laboratory,Dr. Madhuri Chopade,LAB 3,Lab
+5,A,Monday,14:15,15:05,2601505,Python Programming Laboratory,UD,LAB 3,Lab
+5,A,Monday,16:05,16:55,2603521,Cyber Crimes Cyber Laws and Cyber Security,Ms. Richa Jadav,510,Lecture
+5,A,Monday,16:05,16:55,2603531,Digital Image and Video Processing,Dr. Madhuri Chopade,507,Lecture
+
+5,A,Tuesday,12:30,13:20,2601503,Probability and Statistics,Prof. Drashti Makwana,510,Lecture
+5,A,Tuesday,13:20,14:10,2601504,Artificial Intelligence,Dr. Aditi Joshi,510,Lecture
+5,A,Tuesday,14:15,15:05,2601505,Python Programming Laboratory,Ms. Yesha Patel,LAB 2,Lab
+5,A,Tuesday,14:15,15:05,2603532,Digital Image and Video Processing Laboratory,Dr. Madhuri Chopade,LAB 3,Lab
+5,A,Tuesday,16:05,16:55,2601502,Structured & Object Oriented Analysis and Design,Ms. Yesha Patel,510,Lecture
+
+5,A,Wednesday,12:30,13:20,2601501,Compiler Design,Ms. Shivangi Gandhi,510,Lecture
+5,A,Wednesday,13:20,14:10,2601504,Artificial Intelligence,Dr. Aditi Joshi,510,Lecture
+5,A,Wednesday,14:15,15:05,,Capstone I,,LAB 3,Lab
+5,A,Wednesday,14:15,15:05,2601505,Python Programming Laboratory,UD,LAB 2,Lab
+5,A,Wednesday,14:15,15:05,2603522,Cyber Security Laboratory,RJ,LAB 3,Lab
+5,A,Wednesday,16:05,16:55,2603531,Digital Image and Video Processing,Dr. Madhuri Chopade,507,Lecture
+5,A,Wednesday,16:05,16:55,2603521,Cyber Crimes Cyber Laws and Cyber Security,Ms. Richa Jadav,510,Lecture
+
+5,A,Thursday,12:30,13:20,2601503,Probability and Statistics,Prof. Drashti Makwana,510,Lecture
+5,A,Thursday,13:20,14:10,2601502,Structured & Object Oriented Analysis and Design,Ms. Yesha Patel,510,Lecture
+5,A,Thursday,14:15,15:05,2601505,Python Programming Laboratory,Ms. Yesha Patel,LAB 2,Lab
+5,A,Thursday,14:15,15:05,,Capstone I,,LAB 3,Lab
+5,A,Thursday,14:15,15:05,,Capstone I,,LAB 3,Lab
+5,A,Thursday,16:05,16:55,2603521,Cyber Crimes Cyber Laws and Cyber Security,Ms. Richa Jadav,510,Lecture
+5,A,Thursday,16:05,16:55,2603531,Digital Image and Video Processing,Dr. Madhuri Chopade,507,Lecture
+
+5,A,Friday,12:30,13:20,2601504,Artificial Intelligence,Dr. Aditi Joshi,510,Lecture
+5,A,Friday,13:20,14:10,2601501,Compiler Design,Ms. Shivangi Gandhi,510,Lecture
+5,A,Friday,14:15,15:05,2603532,Digital Image and Video Processing Laboratory,Dr. Madhuri Chopade,LAB 3,Lab
+5,A,Friday,14:15,15:05,2601505,Python Programming Laboratory,UD,LAB 2,Lab
+5,A,Friday,14:15,15:05,2603522,Cyber Security Laboratory,RJ,LAB 3,Lab
+5,A,Friday,16:05,16:55,2603521,Cyber Crimes Cyber Laws and Cyber Security,Ms. Richa Jadav,510,Lecture
+5,A,Friday,16:05,16:55,2603531,Digital Image and Video Processing,Dr. Madhuri Chopade,507,Lecture
+5,A,Friday,16:55,17:45,2601502,Structured & Object Oriented Analysis and Design,Ms. Yesha Patel,507,Lecture

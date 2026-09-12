@@ -3,7 +3,7 @@ import os
 from google import genai
 from dotenv import load_dotenv
 
-from retriever import retrieve_documents
+from app.rag.retriever import retrieve_documents
 
 
 # Load variables from .env

@@ -1,7 +1,7 @@
 import chromadb
 import re
 
-from embeddings import model
+from app.rag.embeddings import model
 
 
 # Connect to existing ChromaDB
