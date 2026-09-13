@@ -35,11 +35,13 @@ async function handleLabAvailability(question) {
 
     // Detect day
     const days = [
+        "sunday",
         "monday",
         "tuesday",
         "wednesday",
         "thursday",
-        "friday"
+        "friday",
+        "saturday"
     ];
 
     let day = null;
@@ -72,22 +74,53 @@ async function handleLabAvailability(question) {
 
     // Detect time such as 12:30, 2:00, 14:15
     const timeMatch = lowerQuestion.match(
-        /\b(\d{1,2}):(\d{2})\b/
+        /\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/
     );
 
     if (!timeMatch) {
-        return "Please provide a time to check lab availability, for example: Which labs are free at 14:15?";
+        return "Please provide a time to check lab availability, for example: Which labs are free at 4 PM?";
     }
 
     let hour = parseInt(timeMatch[1]);
-    const minute = timeMatch[2];
 
-    // Convert 1 PM, 2 PM etc. if written with PM
-    if (lowerQuestion.includes("pm") && hour < 12) {
+    const minute = timeMatch[2]
+        ? parseInt(timeMatch[2])
+        : 0;
+
+    const period = timeMatch[3];
+
+    if (period === "pm" && hour < 12) {
         hour += 12;
     }
 
-    const time = `${String(hour).padStart(2, "0")}:${minute}`;
+    if (period === "am" && hour === 12) {
+        hour = 0;
+    }
+
+    const time = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+
+    // Sunday is an institute holiday
+    // Sunday is an institute holiday
+    if (day === "sunday") {
+        return `The institute is closed on Sunday. No labs are available.`;
+    }
+
+    // Check academic-calendar holidays
+    const holidayResult = await pool.query(
+        `
+    SELECT holiday_name
+    FROM holidays
+    WHERE CURRENT_DATE BETWEEN holiday_date AND end_date
+    LIMIT 1
+    `
+    );
+
+    if (holidayResult.rows.length > 0) {
+
+        const holidayName = holidayResult.rows[0].holiday_name;
+
+        return `The institute is closed on ${holidayName}. No labs are available.`;
+    }
 
     // Get all labs
     const labsResult = await pool.query(`
@@ -520,36 +553,6 @@ async function handleTimetableQuestion(question, studentId) {
     return answer;
 }
 
-// Create a new chat session
-router.post("/sessions", async (req, res) => {
-    try {
-        const { title } = req.body;
-
-        const result = await pool.query(
-            `
-            INSERT INTO chat_sessions (title)
-            VALUES ($1)
-            RETURNING *
-            `,
-            [title || "New Chat"]
-        );
-
-        res.json({
-            success: true,
-            session: result.rows[0]
-        });
-
-    } catch (error) {
-        console.error(error);
-
-        res.status(500).json({
-            success: false,
-            message: "Failed to create chat session"
-        });
-    }
-});
-
-
 // Add a message to a chat
 router.post("/messages", async (req, res) => {
     try {
@@ -623,16 +626,120 @@ router.get("/sessions/:session_id/messages", async (req, res) => {
     }
 });
 
+// =========================================
+// DELETE CHAT SESSION
+// =========================================
 
-// Get all chat sessions
-router.get("/sessions", async (req, res) => {
+router.delete("/sessions/:session_id", async (req, res) => {
+    const client = await pool.connect();
+
     try {
+        const { session_id } = req.params;
+
+        await client.query("BEGIN");
+
+        // Delete messages belonging to this chat
+        await client.query(
+            `
+            DELETE FROM messages
+            WHERE session_id = $1
+            `,
+            [session_id]
+        );
+
+        // Delete the chat session
+        const result = await client.query(
+            `
+            DELETE FROM chat_sessions
+            WHERE id = $1
+            RETURNING id
+            `,
+            [session_id]
+        );
+
+        await client.query("COMMIT");
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Chat session not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Chat deleted successfully"
+        });
+
+    } catch (error) {
+
+        await client.query("ROLLBACK");
+
+        console.error("Delete chat error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to delete chat"
+        });
+
+    } finally {
+        client.release();
+    }
+});
+
+// Create a new chat session
+router.post("/session", async (req, res) => {
+    try {
+        const { title, student_id } = req.body;
+
+        if (!student_id) {
+            return res.status(400).json({
+                success: false,
+                message: "student_id is required"
+            });
+        }
+
         const result = await pool.query(
             `
-            SELECT *
-            FROM chat_sessions
-            ORDER BY created_at DESC
+            INSERT INTO chat_sessions (user_id, title)
+            VALUES ($1, $2)
+            RETURNING *
+            `,
+            [student_id, title || "New Chat"]
+        );
+
+        res.json({
+            success: true,
+            session: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to create chat session"
+        });
+    }
+});
+
+// Get chat history for a specific student
+router.get("/history/:studentId", async (req, res) => {
+    try {
+        const { studentId } = req.params;
+
+        const result = await pool.query(
             `
+            SELECT
+                id,
+                user_id,
+                title,
+                created_at
+            FROM chat_sessions
+            WHERE user_id = $1
+            ORDER BY created_at DESC
+            `,
+            [studentId]
         );
 
         res.json({
@@ -646,7 +753,7 @@ router.get("/sessions", async (req, res) => {
 
         res.status(500).json({
             success: false,
-            message: "Failed to fetch chat sessions"
+            message: "Failed to fetch chat history"
         });
     }
 });
@@ -681,98 +788,98 @@ router.post("/ask", async (req, res) => {
 
         const roomAnswer = await handleRoomQuestion(question);
 
-/* =========================================
-HANDLE SIMPLE CONVERSATION
-========================================= */
+        /* =========================================
+        HANDLE SIMPLE CONVERSATION
+        ========================================= */
 
-const lowerQuestion = question.trim().toLowerCase();
+        const lowerQuestion = question.trim().toLowerCase();
 
-const greetings = [
-    "hi",
-    "hii",
-    "hiii",
-    "hello",
-    "hey",
-    "heyy",
-    "good morning",
-    "good afternoon",
-    "good evening"
-];
+        const greetings = [
+            "hi",
+            "hii",
+            "hiii",
+            "hello",
+            "hey",
+            "heyy",
+            "good morning",
+            "good afternoon",
+            "good evening"
+        ];
 
-const isGreeting = greetings.includes(lowerQuestion);
+        const isGreeting = greetings.includes(lowerQuestion);
 
-let answer = null;
-
-
-/* =========================================
-GREETING
-========================================= */
-
-if (isGreeting) {
-
-    answer = "Hi! 👋 I'm Nexus. How can I help you today?";
-
-}
+        let answer = null;
 
 
-/* =========================================
-CAMPUS / TIMETABLE QUESTIONS
-========================================= */
+        /* =========================================
+        GREETING
+        ========================================= */
 
-if (!answer) {
+        if (isGreeting) {
 
-    const labAnswer = await handleLabAvailability(question);
+            answer = "Hi! 👋 I'm Nexus. How can I help you today?";
 
-    const roomAnswer = await handleRoomQuestion(question);
-
-    let timetableAnswer;
-
-    if (labAnswer) {
-
-        timetableAnswer = labAnswer;
-
-    } else if (roomAnswer) {
-
-        timetableAnswer = roomAnswer;
-
-    } else if (isNextLectureQuestion) {
-
-        timetableAnswer = await handleNextLecture(student_id);
-
-    } else {
-
-        timetableAnswer = await handleTimetableQuestion(
-            question,
-            student_id
-        );
-
-    }
-
-    if (timetableAnswer) {
-
-        answer = timetableAnswer;
-
-    }
-
-}
-
-
-/* =========================================
-RAG FALLBACK
-========================================= */
-
-if (!answer) {
-
-    const ragResponse = await axios.post(
-        "http://localhost:8000/ask",
-        {
-            question: question
         }
-    );
 
-    answer = ragResponse.data.answer;
 
-}
+        /* =========================================
+        CAMPUS / TIMETABLE QUESTIONS
+        ========================================= */
+
+        if (!answer) {
+
+            const labAnswer = await handleLabAvailability(question);
+
+            const roomAnswer = await handleRoomQuestion(question);
+
+            let timetableAnswer;
+
+            if (labAnswer) {
+
+                timetableAnswer = labAnswer;
+
+            } else if (roomAnswer) {
+
+                timetableAnswer = roomAnswer;
+
+            } else if (isNextLectureQuestion) {
+
+                timetableAnswer = await handleNextLecture(student_id);
+
+            } else {
+
+                timetableAnswer = await handleTimetableQuestion(
+                    question,
+                    student_id
+                );
+
+            }
+
+            if (timetableAnswer) {
+
+                answer = timetableAnswer;
+
+            }
+
+        }
+
+
+        /* =========================================
+        RAG FALLBACK
+        ========================================= */
+
+        if (!answer) {
+
+            const ragResponse = await axios.post(
+                "http://localhost:8000/ask",
+                {
+                    question: question
+                }
+            );
+
+            answer = ragResponse.data.answer;
+
+        }
 
         // Save user's question
         await pool.query(

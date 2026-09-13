@@ -1,57 +1,143 @@
+import os
 import chromadb
 
-from loader import load_pdf
-from splitter import split_text
-from embeddings import create_embeddings
+from app.rag.loader import load_document
+from app.rag.splitter import split_text
+from app.rag.embeddings import create_embeddings
 
 
-# Create a persistent ChromaDB client
-client = chromadb.PersistentClient(path="chroma_db")
+# =========================================
+# CHROMADB
+# =========================================
 
+client = chromadb.PersistentClient(
+    path="chroma_db"
+)
 
-# Create or get our collection
 collection = client.get_or_create_collection(
     name="nexus_documents"
 )
 
 
-def store_documents(chunks, embeddings):
+# =========================================
+# STORE DOCUMENT
+# =========================================
 
-    ids = [f"chunk_{i}" for i in range(len(chunks))]
+def store_document(file_path):
 
-    # Metadata for each chunk
-    metadatas = [
-        {
-            "source": "Academic Calendar 2026-27",
-            "file": "ACADEMIC-CALENDAR-2026 - odd semesters (1).pdf"
-        }
-        for _ in chunks
-    ]
+    # -------------------------------------
+    # 1. Extract text
+    # -------------------------------------
 
-    collection.add(
-        ids=ids,
-        documents=chunks,
-        embeddings=embeddings.tolist(),
-        metadatas=metadatas
+    print("Loading document...")
+
+    text = load_document(file_path)
+
+    print(
+        "Characters extracted:",
+        len(text)
     )
 
-    print(f"Stored {len(chunks)} chunks in ChromaDB.")
+
+    if not text.strip():
+
+        raise ValueError(
+            "No text could be extracted from the document."
+        )
 
 
-if __name__ == "__main__":
-
-    file_path = "documents/ACADEMIC-CALENDAR-2026 - odd semesters (1).pdf"
-
-    # 1. Load PDF
-    text = load_pdf(file_path)
-
+    # -------------------------------------
     # 2. Split text
+    # -------------------------------------
+
+    print("Splitting document...")
+
     chunks = split_text(text)
 
+    print(
+        "Chunks created:",
+        len(chunks)
+    )
+
+
+    # -------------------------------------
     # 3. Create embeddings
-    embeddings = create_embeddings(chunks)
+    # -------------------------------------
 
-    # 4. Store everything in ChromaDB
-    store_documents(chunks, embeddings)
+    print("Creating embeddings...")
 
-    print("ChromaDB setup completed!")
+    embeddings = create_embeddings(
+        chunks
+    )
+
+    print("Embeddings created.")
+
+
+    # -------------------------------------
+    # 4. Document information
+    # -------------------------------------
+
+    filename = os.path.basename(
+        file_path
+    )
+
+
+    # -------------------------------------
+    # 5. Create unique IDs
+    # -------------------------------------
+
+    existing_count = collection.count()
+
+    ids = [
+        f"document_{existing_count + i}"
+        for i in range(len(chunks))
+    ]
+
+
+    # -------------------------------------
+    # 6. Metadata
+    # -------------------------------------
+
+    metadatas = [
+
+        {
+            "source": filename,
+            "file": filename
+        }
+
+        for _ in chunks
+
+    ]
+
+
+    # -------------------------------------
+    # 7. Store in ChromaDB
+    # -------------------------------------
+
+    collection.add(
+
+        ids=ids,
+
+        documents=chunks,
+
+        embeddings=embeddings.tolist(),
+
+        metadatas=metadatas
+
+    )
+
+
+    print(
+        f"Stored {len(chunks)} chunks in ChromaDB."
+    )
+
+
+    return {
+
+        "filename": filename,
+
+        "characters": len(text),
+
+        "chunks": len(chunks)
+
+    }

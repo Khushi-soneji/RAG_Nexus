@@ -1,0 +1,667 @@
+/* =========================================
+   NEXUS — SIGN UP PAGE
+========================================= */
+
+.signup-page {
+    min-height: 100vh;
+
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px 20px;
+
+    background:
+        radial-gradient(
+            ellipse 40% 55% at 3% 35%,
+            rgba(205, 195, 255, 0.70),
+            transparent 75%
+        ),
+
+        radial-gradient(
+            ellipse 38% 50% at 97% 68%,
+            rgba(255, 220, 250, 0.70),
+            transparent 75%
+        ),
+
+        radial-gradient(
+            ellipse 35% 40% at 50% 50%,
+            rgba(216, 210, 255, 0.35),
+            transparent 75%
+        ),
+
+        linear-gradient(
+            135deg,
+            #f0eaff 0%,
+            #f6f4ff 35%,
+            #faf9ff 60%,
+            #f7f0ff 100%
+        );
+
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+
+/* =========================================
+   BACKGROUND ORBS
+========================================= */
+
+.signup-orb {
+    position: absolute;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+
+/* =========================================
+   LARGE PURPLE ORB
+========================================= */
+
+.signup-orb-purple {
+    width: 360px;
+    height: 360px;
+
+    left: -120px;
+    top: 120px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #d4ceff,
+            #bdb4fa,
+            #aaa0f2
+        );
+
+    filter: blur(1px);
+
+    opacity: 0.90;
+}
+
+
+/* =========================================
+   LARGE YELLOW ORB
+========================================= */
+
+.signup-orb-yellow {
+    width: 340px;
+    height: 340px;
+
+    right: -100px;
+    bottom: 35px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff5c9,
+            #ffebaa,
+            #ffdc82
+        );
+
+    filter: blur(1px);
+
+    opacity: 0.82;
+}
+
+
+/* =========================================
+   SMALL PURPLE ORB
+========================================= */
+
+.signup-orb-small-purple {
+    width: 54px;
+    height: 54px;
+
+    left: 42px;
+    bottom: 90px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #d8d1ff,
+            #afa4f3
+        );
+
+    opacity: 0.85;
+}
+
+
+/* =========================================
+   SMALL YELLOW ORB
+========================================= */
+
+.signup-orb-small-yellow {
+    width: 38px;
+    height: 38px;
+
+    right: 45px;
+    top: 105px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff7cb,
+            #ffdf82
+        );
+
+    opacity: 0.90;
+}
+
+
+/* =========================================
+   SIGNUP CARD
+========================================= */
+
+.signup-card {
+    width: 100%;
+    max-width: 460px;
+
+    position: relative;
+    z-index: 2;
+
+    padding: 32px 38px 26px;
+
+    border-radius: 30px;
+
+    border: 1px solid rgba(255, 255, 255, 0.78);
+
+    background:
+        rgba(255, 255, 255, 0.67);
+
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+
+    box-shadow:
+        0 30px 70px rgba(70, 60, 120, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+.signup-logo {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 19px;
+}
+
+
+.signup-logo-icon {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    color: white;
+
+    font-size: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #815cf5,
+            #a36cf7
+        );
+
+    box-shadow:
+        0 8px 18px rgba(124, 92, 255, 0.23);
+}
+
+
+.signup-logo span {
+    font-size: 22px;
+
+    font-weight: 800;
+
+    letter-spacing: -0.6px;
+
+    color: #27213d;
+}
+
+
+/* =========================================
+   HEADING
+========================================= */
+
+.signup-heading {
+    margin-bottom: 21px;
+}
+
+
+.signup-heading h1 {
+    margin: 0 0 5px;
+
+    font-size: 29px;
+
+    line-height: 1.1;
+
+    letter-spacing: -1.2px;
+
+    color: #211d31;
+}
+
+
+.signup-heading p {
+    margin: 0;
+
+    color: #777286;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.signup-form {
+    width: 100%;
+}
+
+
+.signup-field {
+    width: 100%;
+
+    margin-bottom: 12px;
+}
+
+
+.signup-field label {
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: 11.5px;
+
+    font-weight: 700;
+
+    color: #4b4659;
+}
+
+
+/* =========================================
+   INPUT WRAPPER
+========================================= */
+
+.signup-input-wrapper {
+    width: 100%;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 13px;
+
+    gap: 9px;
+
+    border-radius: 13px;
+
+    border: 1px solid rgba(100, 90, 130, 0.13);
+
+    background:
+        rgba(255, 255, 255, 0.63);
+
+    box-shadow:
+        inset 0 1px 2px rgba(80, 70, 110, 0.025);
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.signup-input-wrapper:focus-within {
+    border-color:
+        rgba(125, 91, 240, 0.40);
+
+    background:
+        rgba(255, 255, 255, 0.80);
+
+    box-shadow:
+        0 0 0 3px rgba(124, 92, 255, 0.08);
+}
+
+
+.signup-input-wrapper > span {
+    flex-shrink: 0;
+
+    width: 19px;
+
+    text-align: center;
+
+    color: #8273b1;
+
+    font-size: 15px;
+}
+
+
+/* =========================================
+   TEXT INPUT
+========================================= */
+
+.signup-input-wrapper input {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 100%;
+
+    padding: 0;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    color: #29263a;
+
+    font-size: 13px;
+
+    font-family: inherit;
+}
+
+
+.signup-input-wrapper input::placeholder {
+    color: #aaa5b5;
+}
+
+
+/* =========================================
+   PASSWORD TOGGLE
+========================================= */
+
+.password-toggle {
+    width: 26px;
+    height: 26px;
+
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: #9388aa;
+
+    cursor: pointer;
+
+    font-size: 15px;
+}
+
+
+/* =========================================
+   SEMESTER + DIVISION
+========================================= */
+
+.signup-row {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 14px;
+}
+
+
+.select-wrapper {
+    padding-right: 10px;
+}
+
+
+.select-wrapper select {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 100%;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    color: #29263a;
+
+    font-size: 13px;
+
+    font-family: inherit;
+
+    cursor: pointer;
+}
+
+
+/* =========================================
+   MESSAGES
+========================================= */
+
+.signup-message {
+    padding: 9px 12px;
+
+    margin-bottom: 12px;
+
+    border-radius: 11px;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+
+.error-message {
+    color: #a33d52;
+
+    background:
+        rgba(255, 220, 229, 0.65);
+
+    border:
+        1px solid rgba(210, 100, 125, 0.15);
+}
+
+
+.success-message {
+    color: #39734e;
+
+    background:
+        rgba(218, 249, 226, 0.70);
+
+    border:
+        1px solid rgba(80, 170, 105, 0.15);
+}
+
+
+/* =========================================
+   CREATE ACCOUNT BUTTON
+========================================= */
+
+.signup-button {
+    width: 100%;
+    height: 46px;
+
+    margin-top: 2px;
+
+    border: none;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            100deg,
+            #66c7e8,
+            #9eddbb 58%,
+            #d7ef68
+        );
+
+    color: white;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    font-family: inherit;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 10px 24px rgba(105, 190, 215, 0.18);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+
+.signup-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 13px 28px rgba(105, 190, 215, 0.24);
+
+    filter: brightness(1.02);
+}
+
+
+.signup-button:active {
+    transform: translateY(0);
+}
+
+
+.signup-button:disabled {
+    opacity: 0.65;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =========================================
+   LOGIN LINK
+========================================= */
+
+.login-text {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    margin-top: 15px;
+
+    font-size: 12px;
+
+    color: #777286;
+}
+
+
+.login-text button {
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: #29233f;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    font-family: inherit;
+
+    cursor: pointer;
+}
+
+
+.login-text button:hover {
+    color: #7655e9;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 600px) {
+
+    .signup-page {
+        padding: 20px 16px;
+    }
+
+
+    .signup-card {
+        max-width: 100%;
+
+        padding: 28px 22px 24px;
+
+        border-radius: 27px;
+    }
+
+
+    .signup-logo {
+        margin-bottom: 18px;
+    }
+
+
+    .signup-heading h1 {
+        font-size: 27px;
+    }
+
+
+    .signup-heading {
+        margin-bottom: 20px;
+    }
+
+
+    .signup-row {
+        grid-template-columns: 1fr;
+
+        gap: 0;
+    }
+
+
+    .signup-orb-purple {
+        width: 270px;
+        height: 270px;
+
+        left: -145px;
+    }
+
+
+    .signup-orb-yellow {
+        width: 270px;
+        height: 270px;
+
+        right: -145px;
+        bottom: 25px;
+    }
+
+
+    .signup-orb-small-purple,
+    .signup-orb-small-yellow {
+        display: none;
+    }
+
+}

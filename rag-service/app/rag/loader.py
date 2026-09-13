@@ -1,12 +1,17 @@
+import os
+
 from pypdf import PdfReader
+from docx import Document
 
 
 def load_pdf(file_path):
+
     reader = PdfReader(file_path)
 
     text = ""
 
     for page in reader.pages:
+
         page_text = page.extract_text()
 
         if page_text:
@@ -15,13 +20,54 @@ def load_pdf(file_path):
     return text
 
 
-if __name__ == "__main__":
-    file_path = "documents/ACADEMIC-CALENDAR-2026 - odd semesters (1).pdf"
+def load_txt(file_path):
 
-    text = load_pdf(file_path)
+    with open(
+        file_path,
+        "r",
+        encoding="utf-8"
+    ) as file:
 
-    print("PDF loaded successfully!")
-    print("Characters extracted:", len(text))
+        text = file.read()
 
-    print("\n--- First 2000 characters ---\n")
-    print(text[:2000])
+    return text
+
+
+def load_docx(file_path):
+
+    document = Document(file_path)
+
+    text = ""
+
+    for paragraph in document.paragraphs:
+
+        if paragraph.text.strip():
+
+            text += paragraph.text + "\n"
+
+    return text
+
+
+def load_document(file_path):
+
+    extension = os.path.splitext(
+        file_path
+    )[1].lower()
+
+    if extension == ".pdf":
+
+        return load_pdf(file_path)
+
+    elif extension == ".txt":
+
+        return load_txt(file_path)
+
+    elif extension == ".docx":
+
+        return load_docx(file_path)
+
+    else:
+
+        raise ValueError(
+            f"Unsupported file type: {extension}"
+        )

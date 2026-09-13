@@ -6,6 +6,8 @@ const labRoutes = require("./routes/labRoutes");
 const ragRoutes = require("./routes/ragRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const studentRoutes = require("./routes/studentRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const pool = require("./db/connection");
 
 const app = express();
@@ -18,6 +20,8 @@ app.use("/api/rag", ragRoutes);
 app.use("/api/labs", labRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/students", studentRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
     res.json({

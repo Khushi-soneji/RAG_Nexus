@@ -1,20 +1,79 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import "./Chat.css";
 
+
 function Chat() {
 
     const navigate = useNavigate();
-
-    const [question, setQuestion] = useState("");
-    const [messages, setMessages] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const location = useLocation();
 
     const messagesEndRef = useRef(null);
+    const homeQuestionHandled = useRef(false);
 
-    // Automatically scroll to the latest message
+
+    // =========================================
+    // LOGGED-IN STUDENT
+    // =========================================
+
+    const student = JSON.parse(
+        localStorage.getItem("nexus_student") || "null"
+    );
+
+    const studentId = student?.id;
+    console.log("Logged-in student:", student);
+    console.log("Student ID:", studentId);
+
+    const studentName = student?.name || "Student";
+
+
+    const studentInitial = studentName
+        .charAt(0)
+        .toUpperCase();
+
+
+    // =========================================
+    // STATE
+    // =========================================
+
+    const [messages, setMessages] = useState([]);
+
+    const [input, setInput] = useState("");
+
+    const [loading, setLoading] = useState(false);
+
+    const [chatHistory, setChatHistory] = useState([]);
+
+    const [showHistory, setShowHistory] = useState(false);
+
+
+    // =========================================
+    // LOAD CHAT HISTORY
+    // =========================================
+
+    const loadChatHistory = async () => {
+        try {
+            if (!studentId) return;
+
+            const response = await axios.get(
+                `http://localhost:5000/api/chat/history/${studentId}`
+            );
+
+            setChatHistory(response.data.sessions || []);
+
+        } catch (error) {
+            console.error("Failed to load chat history:", error);
+        }
+    };
+    useEffect(() => {
+        loadChatHistory();
+    }, [studentId]);
+    // =========================================
+    // SCROLL TO LATEST MESSAGE
+    // =========================================
+
     useEffect(() => {
 
         messagesEndRef.current?.scrollIntoView({
@@ -24,98 +83,450 @@ function Chat() {
     }, [messages, loading]);
 
 
-    // Send question to Nexus
-    const sendQuestion = async (text = question) => {
+    // =========================================
+    // NEW CHAT
+    // =========================================
 
-        if (!text.trim() || loading) {
+    const handleNewChat = async () => {
+
+        try {
+
+            if (!studentId) {
+                return;
+            }
+
+            const response = await axios.post(
+                "http://localhost:5000/api/chat/session",
+                {
+                    student_id: studentId
+                }
+            );
+
+            const newSessionId =
+                response.data.session.id;
+
+            localStorage.setItem(
+                "nexus_chat_session",
+                newSessionId
+            );
+
+            setMessages([]);
+
+            setInput("");
+
+            setShowHistory(false);
+
+            loadChatHistory();
+
+        } catch (error) {
+
+            console.error(
+                "New chat error:",
+                error
+            );
+
+        }
+
+    };
+
+    // =========================================
+    // OPEN OLD CHAT
+    // =========================================
+
+    const handleOpenChat = async (sessionId) => {
+        try {
+
+            const response = await axios.get(
+                `http://localhost:5000/api/chat/sessions/${sessionId}/messages`
+            );
+
+            const oldMessages = response.data.messages || [];
+
+            console.log("Old chat messages:", oldMessages);
+
+            // Save selected session
+            localStorage.setItem(
+                "nexus_chat_session",
+                sessionId
+            );
+
+            // Convert database messages to Chat UI format
+            const formattedMessages = oldMessages.map(
+                (message, index) => ({
+                    id: message.id || `${sessionId}-${index}`,
+                    sender:
+                        message.sender === "user"
+                            ? "user"
+                            : "nexus",
+                    text:
+                        message.message ||
+                        message.content ||
+                        message.text ||
+                        ""
+                })
+            );
+
+            setMessages(formattedMessages);
+
+            setShowHistory(false);
+
+            setInput("");
+
+        } catch (error) {
+
+            console.error(
+                "Failed to open old chat:",
+                error
+            );
+
+        }
+    };
+
+    // =========================================
+    // DELETE CHAT
+    // =========================================
+
+    const handleDeleteChat = async (sessionId) => {
+
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this chat?"
+        );
+
+        if (!confirmed) {
             return;
         }
 
-        const userQuestion = text.trim();
+        try {
+
+            await axios.delete(
+                `http://localhost:5000/api/chat/sessions/${sessionId}`
+            );
+
+            // If the deleted chat is currently open
+            const currentSession =
+                localStorage.getItem("nexus_chat_session");
+
+            if (String(currentSession) === String(sessionId)) {
+
+                localStorage.removeItem(
+                    "nexus_chat_session"
+                );
+
+                setMessages([]);
+
+            }
+
+            // Refresh history
+            loadChatHistory();
+
+        } catch (error) {
+
+            console.error(
+                "Failed to delete chat:",
+                error
+            );
+
+            alert(
+                "Could not delete this chat. Please try again."
+            );
+        }
+    };
+
+    // =========================================
+    // HANDLE QUESTION FROM HOME
+    // =========================================
+
+    useEffect(() => {
+
+        const homeQuestion = location.state?.question;
+
+        if (homeQuestion && !homeQuestionHandled.current) {
+
+            homeQuestionHandled.current = true;
+
+            sendQuestion(homeQuestion);
+
+            window.history.replaceState(
+                {},
+                document.title
+            );
+        }
+
+    }, []);
+
+
+    // =========================================
+    // SEND QUESTION
+    // =========================================
+
+    const sendQuestion = async (questionText) => {
+
+        const cleanQuestion = questionText?.trim();
+
+        if (!cleanQuestion) {
+            return;
+        }
+
 
         // Add user message
-        setMessages((previousMessages) => [
-            ...previousMessages,
-            {
-                sender: "user",
-                message: userQuestion
-            }
+
+        const userMessage = {
+            id: Date.now(),
+            sender: "user",
+            text: cleanQuestion
+        };
+
+
+        setMessages((previous) => [
+            ...previous,
+            userMessage
         ]);
 
-        setQuestion("");
+
+        setInput("");
+
         setLoading(true);
 
+
         try {
+
+            if (!studentId) {
+
+                throw new Error(
+                    "Student session not found."
+                );
+
+            }
+
+
+            // Create chat session if needed
+
+            let sessionId =
+                localStorage.getItem(
+                    "nexus_chat_session"
+                );
+
+
+            if (!sessionId) {
+
+                const sessionResponse =
+                    await axios.post(
+                        "http://localhost:5000/api/chat/session",
+                        {
+                            student_id: studentId
+                        }
+                    );
+
+
+                sessionId =
+                    sessionResponse.data.session.id;
+
+
+                localStorage.setItem(
+                    "nexus_chat_session",
+                    sessionId
+                );
+
+            }
+
+            console.log("Chat request data:", {
+                question: cleanQuestion,
+                session_id: sessionId,
+                student_id: studentId
+            });
+
+            // Ask Nexus
 
             const response = await axios.post(
                 "http://localhost:5000/api/chat/ask",
                 {
-                    question: userQuestion,
-
-                    // Temporary test values
-                    // These will later come from login
-                    session_id: 1,
-                    student_id: 2
+                    question: cleanQuestion,
+                    session_id: Number(sessionId),
+                    student_id: studentId
                 }
             );
 
+
+            const answer =
+                response.data.answer ||
+                "I couldn't find an answer to that.";
+
+
             // Add Nexus response
-            setMessages((previousMessages) => [
-                ...previousMessages,
-                {
-                    sender: "assistant",
-                    message: response.data.answer
-                }
+
+            const nexusMessage = {
+                id: Date.now() + 1,
+                sender: "nexus",
+                text: answer
+            };
+
+
+            setMessages((previous) => [
+                ...previous,
+                nexusMessage
             ]);
+
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                "Chat error:",
+                error
+            );
 
-            setMessages((previousMessages) => [
-                ...previousMessages,
-                {
-                    sender: "assistant",
-                    message:
-                        "Sorry, I couldn't connect to Nexus right now."
-                }
+
+            const errorMessage = {
+                id: Date.now() + 1,
+                sender: "nexus",
+                text:
+                    "Sorry, I couldn't process your question right now. Please make sure the Nexus backend is running."
+            };
+
+
+            setMessages((previous) => [
+                ...previous,
+                errorMessage
             ]);
+
 
         } finally {
 
             setLoading(false);
 
         }
+
     };
 
 
-    // Quick suggestion
-    const askQuickQuestion = (text) => {
+    // =========================================
+    // FORM SUBMIT
+    // =========================================
 
-        if (loading) {
-            return;
+    const handleSubmit = (e) => {
+
+        e.preventDefault();
+
+        sendQuestion(input);
+
+    };
+
+
+    // =========================================
+    // SUGGESTED QUESTIONS
+    // =========================================
+
+    const suggestions = [
+        "What's my next lecture?",
+        "Which labs are free?",
+        "Where is Room 507?",
+        "When does the semester start?"
+    ];
+
+
+    // =========================================
+    // CLICK SUGGESTION
+    // =========================================
+
+    const handleSuggestion = (question) => {
+
+        sendQuestion(question);
+
+    };
+
+
+    // =========================================
+    // FORMAT MESSAGE
+    // =========================================
+
+    const renderMessage = (message) => {
+
+        const text = message.text || "";
+
+
+        // Detect source in Nexus answer
+
+        const sourceMatch =
+            text.match(
+                /Source:\s*(.+)$/i
+            );
+
+
+        let mainText = text;
+
+        let source = null;
+
+
+        if (sourceMatch) {
+
+            source = sourceMatch[1].trim();
+
+            mainText = text
+                .replace(
+                    /Source:\s*(.+)$/i,
+                    ""
+                )
+                .trim();
+
         }
 
-        sendQuestion(text);
 
-    };
+        return (
+            <div
+                className={`chat-message-row ${message.sender}`}
+                key={message.id}
+            >
+
+                {message.sender === "nexus" && (
+
+                    <div className="nexus-message-avatar">
+                        ✦
+                    </div>
+
+                )}
 
 
-    // Enter key
-    const handleKeyDown = (event) => {
-
-        if (event.key === "Enter") {
-            sendQuestion();
-        }
-
-    };
+                <div className="chat-message-content">
 
 
-    // Start new chat
-    const startNewChat = () => {
+                    {message.sender === "nexus" && (
 
-        setMessages([]);
-        setQuestion("");
+                        <span className="message-name">
+                            Nexus
+                        </span>
+
+                    )}
+
+
+                    <div className="chat-bubble">
+
+                        <p>
+                            {mainText}
+                        </p>
+
+
+                        {source && (
+
+                            <div className="message-source">
+
+                                <span className="source-label">
+                                    📄 Source
+                                </span>
+
+                                <strong className="source-name">
+                                    {source}
+                                </strong>
+
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </div>
+
+
+            </div>
+        );
 
     };
 
@@ -124,231 +535,221 @@ function Chat() {
 
         <div className="chat-page">
 
-            {/* ================= HEADER ================= */}
+
+            {/* =====================================
+                BACKGROUND DECORATIONS
+            ===================================== */}
+
+            <div className="chat-orb chat-orb-purple"></div>
+
+            <div className="chat-orb chat-orb-blue"></div>
+
+            <div className="chat-orb chat-orb-yellow"></div>
+
+
+
+            {/* =====================================
+                HEADER
+            ===================================== */}
 
             <header className="chat-header">
 
-                <div
-                    className="nexus-brand"
-                    onClick={() => navigate("/")}
-                >
 
-                    <div className="brand-icon">
+                {/* LEFT */}
+
+                <div className="chat-header-left">
+
+                    <button
+                        className="chat-back-button"
+                        onClick={() => navigate("/")}
+                        title="Back to Home"
+                    >
+
+                        <svg viewBox="0 0 24 24">
+
+                            <path d="M15 18l-6-6 6-6" />
+
+                        </svg>
+
+                    </button>
+
+
+                    <div className="chat-brand-icon">
                         ✦
                     </div>
 
-                    <span>Nexus</span>
+
+                    <div className="chat-brand-text">
+
+                        <strong>
+                            Nexus AI
+                        </strong>
+
+                        <span>
+                            Campus Assistant
+                        </span>
+
+                    </div>
 
                 </div>
 
-
-                <div className="chat-status">
-
-                    <strong>Nexus</strong>
-
-                    <span>
-                        · Ready to help
-                    </span>
-
-                </div>
-
+                {/* HISTORY */}
 
                 <button
-                    className="new-chat-button"
-                    onClick={startNewChat}
-                    title="New chat"
+                    className="history-button"
+                    onClick={() => setShowHistory(true)}
                 >
-                    +
+                    <span>History</span>
                 </button>
+
+
+                {/* RIGHT PROFILE */}
+
+                <button
+                    className="chat-profile-button"
+                    onClick={() => navigate("/profile")}
+                >
+
+                    <div className="chat-profile-info">
+
+                        <strong>
+                            {studentName}
+                        </strong>
+
+                        <span>
+                            Student
+                        </span>
+
+                    </div>
+
+
+                    <div className="chat-profile-avatar">
+
+                        {studentInitial}
+
+                    </div>
+
+                </button>
+
 
             </header>
 
 
-            {/* ================= MAIN ================= */}
+
+            {/* =====================================
+                CHAT AREA
+            ===================================== */}
 
             <main className="chat-main">
 
-                {/* EMPTY CHAT */}
 
-                {messages.length === 0 && (
+                {/* =================================
+                    EMPTY STATE
+                ================================= */}
 
-                    <div className="chat-empty">
+                {messages.length === 0 && !loading && (
 
-                        <div className="hero-ai-icon">
+                    <section className="chat-empty-state">
+
+
+                        <div className="chat-welcome-icon">
                             ✦
                         </div>
 
+
+                        <span className="chat-welcome-label">
+                            NEXUS AI
+                        </span>
+
+
                         <h1>
-                            Hi, I'm Nexus
+                            How can I help you today?
                         </h1>
 
+
                         <p>
-                            Ask me about your classes, rooms, labs,
-                            academic calendar
-                            <br className="desktop-break" />
-                            or college information.
+                            Ask me about your timetable,
+                            rooms, labs, academic dates
+                            or college documents.
                         </p>
 
 
-                        {/* ================= SUGGESTIONS ================= */}
-
                         <div className="suggestion-grid">
 
-                            <button
-                                className="suggestion-card"
-                                onClick={() =>
-                                    askQuickQuestion("What's my next lecture?")
-                                }
-                            >
+                            {suggestions.map(
+                                (suggestion, index) => (
 
-                                <div className="suggestion-icon purple">
-                                    📅
-                                </div>
+                                    <button
+                                        key={index}
+                                        className="suggestion-card"
+                                        onClick={() =>
+                                            handleSuggestion(
+                                                suggestion
+                                            )
+                                        }
+                                    >
 
-                                <div>
-                                    <strong>
-                                        What's my next lecture?
-                                    </strong>
+                                        <span>
+                                            {suggestion}
+                                        </span>
 
-                                    <span>
-                                        Check your upcoming class
-                                    </span>
-                                </div>
+                                        <span className="suggestion-arrow">
+                                            ↗
+                                        </span>
 
-                            </button>
+                                    </button>
 
-
-                            <button
-                                className="suggestion-card"
-                                onClick={() =>
-                                    askQuickQuestion("Where is room 507?")
-                                }
-                            >
-
-                                <div className="suggestion-icon pink">
-                                    📍
-                                </div>
-
-                                <div>
-                                    <strong>
-                                        Where is room 507?
-                                    </strong>
-
-                                    <span>
-                                        Find a classroom or lab
-                                    </span>
-                                </div>
-
-                            </button>
-
-
-                            <button
-                                className="suggestion-card"
-                                onClick={() =>
-                                    askQuickQuestion(
-                                        "Which labs are free at 14:15 on Tuesday?"
-                                    )
-                                }
-                            >
-
-                                <div className="suggestion-icon green">
-                                    🧪
-                                </div>
-
-                                <div>
-                                    <strong>
-                                        Which labs are free?
-                                    </strong>
-
-                                    <span>
-                                        Check lab availability
-                                    </span>
-                                </div>
-
-                            </button>
-
-
-                            <button
-                                className="suggestion-card"
-                                onClick={() =>
-                                    askQuickQuestion(
-                                        "When does the semester start?"
-                                    )
-                                }
-                            >
-
-                                <div className="suggestion-icon blue">
-                                    📚
-                                </div>
-
-                                <div>
-                                    <strong>
-                                        When does the semester start?
-                                    </strong>
-
-                                    <span>
-                                        Ask about academic information
-                                    </span>
-                                </div>
-
-                            </button>
+                                )
+                            )}
 
                         </div>
 
-                    </div>
+
+                    </section>
 
                 )}
 
 
-                {/* ================= MESSAGES ================= */}
+
+                {/* =================================
+                    MESSAGES
+                ================================= */}
 
                 {messages.length > 0 && (
 
-                    <div className="messages">
+                    <section className="messages-container">
 
-                        {messages.map((item, index) => (
-
-                            <div
-                                key={index}
-                                className={`message-row ${item.sender}`}
-                            >
-
-                                {item.sender === "assistant" && (
-
-                                    <div className="assistant-avatar">
-                                        ✦
-                                    </div>
-
-                                )}
-
-                                <div className="message-content">
-
-                                    <div className="message-bubble">
-                                        {item.message}
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        ))}
+                        {messages.map(
+                            (message) =>
+                                renderMessage(message)
+                        )}
 
 
                         {/* Typing indicator */}
 
                         {loading && (
 
-                            <div className="message-row assistant">
+                            <div className="chat-message-row nexus">
 
-                                <div className="assistant-avatar">
+                                <div className="nexus-message-avatar">
                                     ✦
                                 </div>
 
-                                <div className="message-bubble typing">
 
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
+                                <div className="chat-message-content">
+
+                                    <span className="message-name">
+                                        Nexus
+                                    </span>
+
+
+                                    <div className="typing-bubble">
+
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+
+                                    </div>
 
                                 </div>
 
@@ -357,109 +758,266 @@ function Chat() {
                         )}
 
 
-                        <div ref={messagesEndRef}></div>
+                        <div
+                            ref={messagesEndRef}
+                        />
 
-                    </div>
+                    </section>
 
                 )}
+
 
             </main>
 
 
-            {/* ================= INPUT ================= */}
 
-            <div className="chat-input-area">
+            {/* =====================================
+                INPUT AREA
+            ===================================== */}
 
-                <div className="chat-input">
+            <div className="chat-input-section">
 
-                    <span className="input-sparkle">
+
+                <form
+                    className="chat-input-container"
+                    onSubmit={handleSubmit}
+                >
+
+
+                    <div className="chat-input-symbol">
                         ✦
-                    </span>
+                    </div>
+
 
                     <input
                         type="text"
-                        value={question}
-                        onChange={(event) =>
-                            setQuestion(event.target.value)
-                        }
-                        onKeyDown={handleKeyDown}
                         placeholder="Ask Nexus anything..."
+                        value={input}
+                        onChange={(e) =>
+                            setInput(e.target.value)
+                        }
                         disabled={loading}
                     />
 
+
                     <button
-                        onClick={() => sendQuestion()}
+                        type="submit"
+                        className="chat-send-button"
                         disabled={
-                            loading ||
-                            !question.trim()
+                            !input.trim() ||
+                            loading
                         }
                     >
-                        →
+
+                        <svg viewBox="0 0 24 24">
+
+                            <path d="M4 4l16 8-16 8 3-8-3-8Z" />
+
+                            <path d="M7 12h9" />
+
+                        </svg>
+
                     </button>
 
-                </div>
+
+                </form>
+
+
+                <p className="chat-input-hint">
+
+                    Nexus uses your college knowledge base
+                    to provide relevant answers.
+
+                </p>
+
 
             </div>
 
+            {/* =====================================
+    CHAT HISTORY SIDEBAR
+===================================== */}
 
-            {/* ================= NAVIGATION ================= */}
-
-            <nav className="bottom-nav">
-
+            {showHistory && (
                 <div
+                    className="history-overlay"
+                    onClick={() => setShowHistory(false)}
+                >
+
+                    <aside
+                        className="history-sidebar"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+
+                        <div className="history-sidebar-header">
+
+                            <div>
+                                <span>YOUR CHATS</span>
+                                <h2>Chat History</h2>
+                            </div>
+
+                            <button
+                                className="history-close-button"
+                                onClick={() => setShowHistory(false)}
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+
+                        <button
+                            className="new-chat-button"
+                            onClick={handleNewChat}
+                        >
+                            <span>＋</span>
+                            New Chat
+                        </button>
+
+
+                        <div className="history-list">
+
+                            {chatHistory.length === 0 ? (
+
+                                <div className="no-history">
+
+                                    <div className="no-history-icon">
+                                        ✦
+                                    </div>
+
+                                    <p>No previous chats yet.</p>
+
+                                    <span>
+                                        Start a conversation with Nexus.
+                                    </span>
+
+                                </div>
+
+                            ) : (
+
+                                chatHistory.map((chat) => (
+
+                                    <div
+                                        key={chat.id}
+                                        className="history-item"
+                                        onClick={() => handleOpenChat(chat.id)}
+                                    >
+
+                                        <div className="history-item-icon">
+                                            ✦
+                                        </div>
+
+                                        <div className="history-item-content">
+
+                                            <strong>
+                                                {chat.title || "New Chat"}
+                                            </strong>
+
+                                            <span>
+                                                {new Date(
+                                                    chat.created_at
+                                                ).toLocaleDateString()}
+                                            </span>
+
+                                        </div>
+
+                                        <button
+                                            className="history-delete-button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteChat(chat.id);
+                                            }}
+                                            title="Delete chat"
+                                        >
+                                            🗑
+                                        </button>
+
+                                    </div>
+
+                                ))
+
+                            )}
+
+                        </div>
+
+                    </aside>
+
+                </div>
+            )}
+
+            {/* =====================================
+                MOBILE BOTTOM NAV
+            ===================================== */}
+
+            <nav className="chat-mobile-nav">
+
+
+                <button
                     onClick={() => navigate("/")}
                 >
 
-                    <span>⌂</span>
+                    <svg viewBox="0 0 24 24">
 
-                    <small>
+                        <path d="M3 10.5L12 3l9 7.5" />
+
+                        <path d="M5 9.5V21h14V9.5" />
+
+                    </svg>
+
+                    <span>
                         Home
-                    </small>
+                    </span>
 
-                </div>
+                </button>
 
 
-                <div className="active">
+                <button className="active">
 
-                    <span>●</span>
+                    <svg viewBox="0 0 24 24">
 
-                    <small>
+                        <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5c-1.4 0-2.7-.4-3.8-1L4 19l1.3-3.5A7.4 7.4 0 0 1 4.5 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z" />
+
+                    </svg>
+
+                    <span>
                         Chat
-                    </small>
+                    </span>
 
-                </div>
+                </button>
 
 
-                <div
-                    onClick={() => navigate("/chat")}
+                <button
+                    onClick={() =>
+                        navigate("/profile")
+                    }
                 >
 
-                    <span>▣</span>
+                    <svg viewBox="0 0 24 24">
 
-                    <small>
-                        Schedule
-                    </small>
+                        <circle
+                            cx="12"
+                            cy="8"
+                            r="3.5"
+                        />
 
-                </div>
+                        <path d="M5 20c.8-3.3 3.1-5 7-5s6.2 1.7 7 5" />
 
+                    </svg>
 
-                <div
-                    onClick={() => navigate("/profile")}
-                >
-
-                    <span>◉</span>
-
-                    <small>
+                    <span>
                         Profile
-                    </small>
+                    </span>
 
-                </div>
+                </button>
+
 
             </nav>
+
 
         </div>
 
     );
+
 }
+
 
 export default Chat;
