@@ -17,17 +17,17 @@ def retrieve_documents(question, top_k=3):
     # 1. Create embedding for the question
     question_embedding = model.encode([question])[0]
 
-    # 2. Retrieve candidates from ChromaDB
+    # 2. Retrieve more candidates
     results = collection.query(
         query_embeddings=[question_embedding.tolist()],
-        n_results=6
+        n_results=10
     )
 
     documents = results["documents"][0]
     distances = results["distances"][0]
     metadatas = results["metadatas"][0]
 
-    # 3. Extract important words from the question
+    # 3. Extract important words
     question_words = re.findall(
         r"\b[a-zA-Z]{3,}\b",
         question.lower()
@@ -43,19 +43,30 @@ def retrieve_documents(question, top_k=3):
 
         document_lower = document.lower()
 
-        # Count keyword matches
         keyword_matches = 0
 
         for word in question_words:
-
             if word in document_lower:
                 keyword_matches += 1
 
-        # Convert distance into similarity score
+        # Extra importance for exact phrase matches
+        phrase_bonus = 0
+
+        if "even semester" in question.lower():
+            if "even semester" in document_lower:
+                phrase_bonus += 0.5
+
+        if "odd semester" in question.lower():
+            if "odd semester" in document_lower:
+                phrase_bonus += 0.5
+
         semantic_score = 1 / (1 + distance)
 
-        # Combine semantic similarity + keyword matching
-        final_score = semantic_score + (keyword_matches * 0.1)
+        final_score = (
+            semantic_score
+            + (keyword_matches * 0.1)
+            + phrase_bonus
+        )
 
         scored_results.append(
             {
@@ -67,13 +78,11 @@ def retrieve_documents(question, top_k=3):
             }
         )
 
-    # 4. Sort by final score
     scored_results.sort(
         key=lambda x: x["score"],
         reverse=True
     )
 
-    # 5. Return best results
     return scored_results[:top_k]
 
 

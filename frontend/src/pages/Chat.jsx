@@ -130,59 +130,6 @@ function Chat() {
     };
 
     // =========================================
-    // OPEN OLD CHAT
-    // =========================================
-
-    const handleOpenChat = async (sessionId) => {
-        try {
-
-            const response = await axios.get(
-                `http://localhost:5000/api/chat/sessions/${sessionId}/messages`
-            );
-
-            const oldMessages = response.data.messages || [];
-
-            console.log("Old chat messages:", oldMessages);
-
-            // Save selected session
-            localStorage.setItem(
-                "nexus_chat_session",
-                sessionId
-            );
-
-            // Convert database messages to Chat UI format
-            const formattedMessages = oldMessages.map(
-                (message, index) => ({
-                    id: message.id || `${sessionId}-${index}`,
-                    sender:
-                        message.sender === "user"
-                            ? "user"
-                            : "nexus",
-                    text:
-                        message.message ||
-                        message.content ||
-                        message.text ||
-                        ""
-                })
-            );
-
-            setMessages(formattedMessages);
-
-            setShowHistory(false);
-
-            setInput("");
-
-        } catch (error) {
-
-            console.error(
-                "Failed to open old chat:",
-                error
-            );
-
-        }
-    };
-
-    // =========================================
     // DELETE CHAT
     // =========================================
 
@@ -202,7 +149,6 @@ function Chat() {
                 `http://localhost:5000/api/chat/sessions/${sessionId}`
             );
 
-            // If the deleted chat is currently open
             const currentSession =
                 localStorage.getItem("nexus_chat_session");
 
@@ -216,8 +162,7 @@ function Chat() {
 
             }
 
-            // Refresh history
-            loadChatHistory();
+            await loadChatHistory();
 
         } catch (error) {
 
@@ -229,7 +174,90 @@ function Chat() {
             alert(
                 "Could not delete this chat. Please try again."
             );
+
         }
+    };
+
+
+    // =========================================
+    // OPEN OLD CHAT
+    // =========================================
+
+    const handleOpenChat = async (sessionId) => {
+
+        try {
+
+            console.log("Opening chat session:", sessionId);
+
+            const response = await axios.get(
+                `http://localhost:5000/api/chat/sessions/${sessionId}/messages`
+            );
+
+            console.log(
+                "Messages received:",
+                response.data.messages
+            );
+
+            const oldMessages =
+                response.data.messages || [];
+
+
+            // Convert database messages
+            // into the format used by Chat.jsx
+
+            const formattedMessages =
+                oldMessages.map((message, index) => {
+
+                    return {
+                        id: message.id || `${sessionId}-${index}`,
+
+                        sender:
+                            message.sender === "user"
+                                ? "user"
+                                : "nexus",
+
+                        text:
+                            message.message ||
+                            message.content ||
+                            message.text ||
+                            ""
+                    };
+
+                });
+
+
+            // Store currently opened session
+
+            localStorage.setItem(
+                "nexus_chat_session",
+                String(sessionId)
+            );
+
+
+            // Display old messages
+
+            setMessages(formattedMessages);
+
+
+            // Clear input
+
+            setInput("");
+
+
+            // Close history sidebar
+
+            setShowHistory(false);
+
+
+        } catch (error) {
+
+            console.error(
+                "Failed to open old chat:",
+                error
+            );
+
+        }
+
     };
 
     // =========================================

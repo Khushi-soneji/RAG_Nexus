@@ -8,6 +8,58 @@ async function handleLabAvailability(question) {
 
     const lowerQuestion = question.toLowerCase();
 
+    // Detect requested date
+    let requestedDate = new Date();
+
+    const dateMatch = lowerQuestion.match(
+        /\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}))?\b/
+    );
+
+    const monthNames = {
+        january: 0,
+        february: 1,
+        march: 2,
+        april: 3,
+        may: 4,
+        june: 5,
+        july: 6,
+        august: 7,
+        september: 8,
+        october: 9,
+        november: 10,
+        december: 11
+    };
+
+    const monthMatch = lowerQuestion.match(
+        /\b(\d{1,2})\s+(january|february|march|april|may|june|july|august|september|october|november|december)\b/
+    );
+
+    if (dateMatch) {
+
+        const dayNumber = parseInt(dateMatch[1]);
+        const monthNumber = parseInt(dateMatch[2]) - 1;
+        const yearNumber = dateMatch[3]
+            ? parseInt(dateMatch[3])
+            : new Date().getFullYear();
+
+        requestedDate = new Date(
+            yearNumber,
+            monthNumber,
+            dayNumber
+        );
+
+    } else if (monthMatch) {
+
+        const dayNumber = parseInt(monthMatch[1]);
+        const monthNumber = monthNames[monthMatch[2]];
+
+        requestedDate = new Date(
+            new Date().getFullYear(),
+            monthNumber,
+            dayNumber
+        );
+    }
+
     // Check whether this is a lab availability question
     const labKeywords = [
         "lab",
@@ -33,8 +85,8 @@ async function handleLabAvailability(question) {
         return null;
     }
 
-    // Detect day
-    const days = [
+    // Detect day from requested date
+    const dayNames = [
         "sunday",
         "monday",
         "tuesday",
@@ -44,33 +96,7 @@ async function handleLabAvailability(question) {
         "saturday"
     ];
 
-    let day = null;
-
-    for (const currentDay of days) {
-
-        if (lowerQuestion.includes(currentDay)) {
-            day = currentDay;
-            break;
-        }
-    }
-
-    // If no day is mentioned, use today's day
-    if (!day) {
-
-        const today = new Date();
-
-        const dayNames = [
-            "sunday",
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday"
-        ];
-
-        day = dayNames[today.getDay()];
-    }
+    let day = dayNames[requestedDate.getDay()];
 
     // Detect time such as 12:30, 2:00, 14:15
     const timeMatch = lowerQuestion.match(
@@ -110,9 +136,10 @@ async function handleLabAvailability(question) {
         `
     SELECT holiday_name
     FROM holidays
-    WHERE CURRENT_DATE BETWEEN holiday_date AND end_date
+    WHERE $1::date BETWEEN holiday_date AND end_date
     LIMIT 1
-    `
+    `,
+        [requestedDate]
     );
 
     if (holidayResult.rows.length > 0) {
@@ -190,6 +217,58 @@ async function handleLabAvailability(question) {
 async function handleRoomQuestion(question) {
 
     const lowerQuestion = question.toLowerCase();
+
+    // Detect requested date
+    let requestedDate = new Date();
+
+    const dateMatch = lowerQuestion.match(
+        /\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}))?\b/
+    );
+
+    const monthNames = {
+        january: 0,
+        february: 1,
+        march: 2,
+        april: 3,
+        may: 4,
+        june: 5,
+        july: 6,
+        august: 7,
+        september: 8,
+        october: 9,
+        november: 10,
+        december: 11
+    };
+
+    const monthMatch = lowerQuestion.match(
+        /\b(\d{1,2})\s+(january|february|march|april|may|june|july|august|september|october|november|december)\b/
+    );
+
+    if (dateMatch) {
+
+        const dayNumber = parseInt(dateMatch[1]);
+        const monthNumber = parseInt(dateMatch[2]) - 1;
+        const yearNumber = dateMatch[3]
+            ? parseInt(dateMatch[3])
+            : new Date().getFullYear();
+
+        requestedDate = new Date(
+            yearNumber,
+            monthNumber,
+            dayNumber
+        );
+
+    } else if (monthMatch) {
+
+        const dayNumber = parseInt(monthMatch[1]);
+        const monthNumber = monthNames[monthMatch[2]];
+
+        requestedDate = new Date(
+            new Date().getFullYear(),
+            monthNumber,
+            dayNumber
+        );
+    }
 
     // Find a room number in the question
     const roomMatch = lowerQuestion.match(
@@ -415,11 +494,13 @@ async function handleTimetableQuestion(question, studentId) {
 
     // Detect day
     const days = [
+        "sunday",
         "monday",
         "tuesday",
         "wednesday",
         "thursday",
-        "friday"
+        "friday",
+        "saturday"
     ];
 
     let day = null;
@@ -879,6 +960,33 @@ router.post("/ask", async (req, res) => {
 
             answer = ragResponse.data.answer;
 
+        }
+        // Set chat title from the first user question
+        const messageCount = await pool.query(
+            `
+    SELECT COUNT(*) 
+    FROM messages
+    WHERE session_id = $1
+    AND sender = 'user'
+    `,
+            [session_id]
+        );
+
+        if (parseInt(messageCount.rows[0].count) === 0) {
+
+            const chatTitle =
+                question.length > 50
+                    ? question.substring(0, 50) + "..."
+                    : question;
+
+            await pool.query(
+                `
+        UPDATE chat_sessions
+        SET title = $1
+        WHERE id = $2
+        `,
+                [chatTitle, session_id]
+            );
         }
 
         // Save user's question
