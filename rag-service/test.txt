@@ -1,0 +1,21 @@
+NEXUS HACKATHON 2026
+
+Nexus Hackathon is a hackathon organized by GLS University.
+
+The hackathon focuses on developing innovative technology-based solutions to real-world problems.
+
+The final round of the Nexus Hackathon is scheduled between 14th September and 16th September.
+
+Participating teams are expected to have a working Proof of Concept (POC) ready for the final evaluation.
+
+During the final evaluation, teams may be asked about their problem understanding, research, requirements, significance, proposed solution, technical feasibility, and implementation.
+
+Teams should be prepared to explain their project clearly and demonstrate their working solution.
+
+The final evaluation may include technical questions from judges regarding the technologies, architecture, implementation, and feasibility of the proposed solution.
+
+Teams are also expected to remain flexible and adapt their solution based on feedback received from industry experts or evaluators.
+
+The Nexus Hackathon encourages students to build practical and innovative solutions using modern technologies such as Artificial Intelligence, Machine Learning, software development, databases, and other relevant technologies.
+
+The hackathon provides an opportunity for students to demonstrate their technical knowledge, problem-solving skills, research, and ability to develop real-world applications.

@@ -65,6 +65,15 @@ function Home() {
     // Open Chat from quick question
     const handleQuickQuestion = (questionText) => {
 
+        const student = JSON.parse(
+            localStorage.getItem("nexus_student") || "null"
+        );
+
+        if (!student) {
+            navigate("/login");
+            return;
+        }
+
         navigate("/chat", {
             state: {
                 question: questionText
@@ -79,13 +88,24 @@ function Home() {
 
         e.preventDefault();
 
-        if (!question.trim()) {
+        // Check if student is logged in
+        const student = JSON.parse(
+            localStorage.getItem("nexus_student") || "null"
+        );
 
-            navigate("/chat");
-
+        // If not logged in, go to Login
+        if (!student) {
+            navigate("/login");
             return;
         }
 
+        // If logged in but no question, open Chat
+        if (!question.trim()) {
+            navigate("/chat");
+            return;
+        }
+
+        // If logged in, open Chat with the question
         navigate("/chat", {
             state: {
                 question: question.trim()

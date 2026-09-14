@@ -249,7 +249,7 @@ function Admin() {
 
                     <button
                         className="admin-back-button"
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate("/login")}
                     >
 
                         <button
