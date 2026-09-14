@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+chromadb
+sentence-transformers
+pypdf
+python-docx
+google-genai
+numpy
+pdfplumber
+psycopg2-binary
