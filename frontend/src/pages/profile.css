@@ -282,10 +282,10 @@
 
 
 /* =========================
-   NEXUS CARD
+   PROFILE CARD
 ========================= */
 
-.nexus-profile-card {
+.profile-card {
     padding: 24px 26px;
 
     border-radius: 25px;
@@ -311,13 +311,13 @@
     margin-bottom: 36px;
 }
 
-.nexus-profile-card-left {
+.profile-card-left {
     display: flex;
     align-items: flex-start;
     gap: 15px;
 }
 
-.nexus-profile-icon {
+.profile-icon {
     width: 45px;
     height: 45px;
 
@@ -340,20 +340,20 @@
         0 9px 22px rgba(125, 110, 215, 0.22);
 }
 
-.nexus-profile-card-left span {
+.profile-card-left span {
     font-size: 9px;
     font-weight: 800;
     letter-spacing: 1.5px;
     color: #85889d;
 }
 
-.nexus-profile-card-left h2 {
+.profile-card-left h2 {
     margin: 4px 0 5px;
 
     font-size: 18px;
 }
 
-.nexus-profile-card-left p {
+.profile-card-left p {
     margin: 0;
 
     max-width: 540px;
@@ -364,7 +364,7 @@
     color: #74788d;
 }
 
-.nexus-profile-details {
+.profile-details {
     display: flex;
     gap: 10px;
 }
@@ -783,12 +783,12 @@
         grid-column: span 2;
     }
 
-    .nexus-profile-card {
+    .profile-card {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .nexus-profile-details {
+    .profile-details {
         justify-content: flex-start;
     }
 }
@@ -845,7 +845,7 @@
         font-size: 11px;
     }
 
-    .nexus-profile-card {
+    .profile-card {
         padding: 18px;
 
         border-radius: 21px;
@@ -853,11 +853,11 @@
         gap: 18px;
     }
 
-    .nexus-profile-card-left p {
+    .profile-card-left p {
         font-size: 11px;
     }
 
-    .nexus-profile-details {
+    .profile-details {
         width: 100%;
     }
 

@@ -129,10 +129,6 @@ function Home() {
                         ✦
                     </div>
 
-                    <span>
-                        Nexus
-                    </span>
-
                 </div>
 
 
@@ -254,7 +250,7 @@ function Home() {
                         <div>
 
                             <h2>
-                                Ask Nexus anything
+                                Ask anything
                             </h2>
 
 
@@ -365,7 +361,7 @@ function Home() {
 
 
                 {/* =================================
-                    ASK NEXUS INPUT
+                    ASK INPUT
                 ================================= */}
 
                 <section className="ask-section">
@@ -384,7 +380,7 @@ function Home() {
 
                         <input
                             type="text"
-                            placeholder="Ask Nexus..."
+                            placeholder="Ask anything..."
                             value={question}
                             onChange={(e) =>
                                 setQuestion(e.target.value)

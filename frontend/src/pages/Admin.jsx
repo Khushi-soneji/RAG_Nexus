@@ -146,7 +146,7 @@ function Admin() {
                 await fetchDocuments();
 
                 setUploadMessage(
-                    "Document successfully added to the Nexus knowledge base."
+                    "Document successfully added to the knowledge base."
                 );
 
 
@@ -174,13 +174,13 @@ function Admin() {
 
                 setUploadMessage(
                     error.response.data.message ||
-                    "This document has already been added to the Nexus knowledge base."
+                    "This document has already been added to the knowledge base."
                 );
 
             } else {
 
                 setUploadMessage(
-                    "Upload failed. Please make sure the Nexus backend and RAG service are running."
+                    "Upload failed. Please make sure the backend and RAG service are running."
                 );
 
             }
@@ -276,7 +276,7 @@ function Admin() {
                     <div className="admin-brand-text">
 
                         <strong>
-                            Nexus Admin
+                            Admin
                         </strong>
 
                         <span>
@@ -314,17 +314,17 @@ function Admin() {
                 <section className="admin-intro">
 
                     <span className="admin-eyebrow">
-                        NEXUS KNOWLEDGE BASE
+                        KNOWLEDGE BASE
                     </span>
 
                     <h1>
-                        Teach Nexus something new.
+                        Teach something new.
                     </h1>
 
                     <p>
                         Upload official college documents
                         and make their information available
-                        to the Nexus AI assistant.
+                        to the AI assistant.
                     </p>
 
                 </section>
@@ -361,7 +361,7 @@ function Admin() {
 
                         <p>
                             Add a PDF, TXT or DOCX file
-                            to the Nexus knowledge base.
+                            to the knowledge base.
                         </p>
 
 
@@ -436,7 +436,7 @@ function Admin() {
 
                             {uploading
                                 ? "Processing..."
-                                : "Add to Nexus"
+                                : "Added Successfully"
                             }
 
                         </button>
@@ -612,14 +612,14 @@ function Admin() {
                     <div>
 
                         <strong>
-                            How Nexus learns
+                            How it learns
                         </strong>
 
                         <p>
                             Uploaded documents are automatically
                             extracted, split into meaningful sections,
                             converted into embeddings and stored in
-                            the Nexus knowledge base.
+                            the knowledge base.
                         </p>
 
                     </div>

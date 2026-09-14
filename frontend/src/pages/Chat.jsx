@@ -363,7 +363,7 @@ function Chat() {
                 student_id: studentId
             });
 
-            // Ask Nexus
+            // Ask
 
             const response = await axios.post(
                 "http://localhost:5000/api/chat/ask",
@@ -380,7 +380,7 @@ function Chat() {
                 "I couldn't find an answer to that.";
 
 
-            // Add Nexus response
+            // Add response
 
             const nexusMessage = {
                 id: Date.now() + 1,
@@ -407,7 +407,7 @@ function Chat() {
                 id: Date.now() + 1,
                 sender: "nexus",
                 text:
-                    "Sorry, I couldn't process your question right now. Please make sure the Nexus backend is running."
+                    "Sorry, I couldn't process your question right now. Please make sure the backend is running."
             };
 
 
@@ -471,7 +471,7 @@ function Chat() {
         const text = message.text || "";
 
 
-        // Detect source in Nexus answer
+        // Detect source in AI answer
 
         const sourceMatch =
             text.match(
@@ -506,7 +506,7 @@ function Chat() {
 
                 {message.sender === "nexus" && (
 
-                    <div className="nexus-message-avatar">
+                    <div className="message-avatar">
                         ✦
                     </div>
 
@@ -519,7 +519,7 @@ function Chat() {
                     {message.sender === "nexus" && (
 
                         <span className="message-name">
-                            Nexus
+                            AI
                         </span>
 
                     )}
@@ -610,7 +610,7 @@ function Chat() {
                     <div className="chat-brand-text">
 
                         <strong>
-                            Nexus AI
+                            AI
                         </strong>
 
                         <span>
@@ -686,7 +686,7 @@ function Chat() {
 
 
                         <span className="chat-welcome-label">
-                            NEXUS AI
+                            AI
                         </span>
 
 
@@ -757,9 +757,9 @@ function Chat() {
 
                         {loading && (
 
-                            <div className="chat-message-row nexus">
+                            <div className="chat-message-row">
 
-                                <div className="nexus-message-avatar">
+                                <div className="message-avatar">
                                     ✦
                                 </div>
 
@@ -767,7 +767,7 @@ function Chat() {
                                 <div className="chat-message-content">
 
                                     <span className="message-name">
-                                        Nexus
+                                        
                                     </span>
 
 
@@ -819,7 +819,7 @@ function Chat() {
 
                     <input
                         type="text"
-                        placeholder="Ask Nexus anything..."
+                        placeholder="Ask anything..."
                         value={input}
                         onChange={(e) =>
                             setInput(e.target.value)
@@ -853,7 +853,7 @@ function Chat() {
 
                 <p className="chat-input-hint">
 
-                    Nexus uses your college knowledge base
+                    This uses your college knowledge base
                     to provide relevant answers.
 
                 </p>
@@ -915,7 +915,7 @@ function Chat() {
                                     <p>No previous chats yet.</p>
 
                                     <span>
-                                        Start a conversation with Nexus.
+                                        Start a conversation with anything.
                                     </span>
 
                                 </div>

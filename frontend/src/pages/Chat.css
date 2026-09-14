@@ -1,5 +1,5 @@
 /* =========================================
-   NEXUS CHAT
+CHAT
    LIGHT AI WORKSPACE
 ========================================= */
 
@@ -513,14 +513,14 @@
 }
 
 
-.chat-message-row.nexus {
+.chat-message-row {
     justify-content: flex-start;
 }
 
 
-/* Nexus avatar */
+/* Message avatar */
 
-.nexus-message-avatar {
+.message-avatar {
     width: 35px;
     height: 35px;
 
@@ -618,9 +618,8 @@
 }
 
 
-/* Nexus */
 
-.chat-message-row.nexus .chat-bubble {
+.chat-message-row .chat-bubble {
     border-bottom-left-radius: 5px;
 
     border: 1px solid rgba(255, 255, 255, 0.85);
@@ -1078,7 +1077,7 @@
     }
 
 
-    .nexus-message-avatar {
+    .message-avatar {
         width: 31px;
         height: 31px;
 

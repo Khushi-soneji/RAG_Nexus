@@ -74,7 +74,7 @@ function AdminLogin() {
                 </div>
 
                 <span className="admin-login-label">
-                    NEXUS ADMIN
+                    ADMIN
                 </span>
 
                 <h1>
@@ -82,7 +82,7 @@ function AdminLogin() {
                 </h1>
 
                 <p>
-                    Sign in to manage the Nexus knowledge base.
+                    Sign in to manage the knowledge base.
                 </p>
 
                 <form onSubmit={handleLogin}>
@@ -93,7 +93,7 @@ function AdminLogin() {
 
                     <input
                         type="email"
-                        placeholder="admin@nexus.com"
+                        placeholder="admin@gmail.com"
                         value={email}
                         onChange={(e) =>
                             setEmail(e.target.value)
@@ -134,7 +134,7 @@ function AdminLogin() {
                     className="admin-login-back"
                     onClick={() => navigate("/")}
                 >
-                    ← Back to Nexus
+                    ← Back 
                 </button>
 
             </div>

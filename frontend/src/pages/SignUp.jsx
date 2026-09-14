@@ -109,8 +109,6 @@ function SignUp() {
                         ✦
                     </div>
 
-                    <span>Nexus</span>
-
                 </div>
 
 
@@ -120,7 +118,7 @@ function SignUp() {
                     <h1>Create Account</h1>
 
                     <p>
-                        Join Nexus and get personalized college assistance
+                        Join and get personalized college assistance
                     </p>
 
                 </div>

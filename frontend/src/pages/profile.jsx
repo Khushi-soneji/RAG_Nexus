@@ -13,9 +13,9 @@ function Profile() {
         )
     );
 
-    const [notifications, setNotifications] = useState(
-        localStorage.getItem("nexus_notifications") !== "off"
-    );
+    // const [notifications, setNotifications] = useState(
+    //     localStorage.getItem("nexus_notifications") !== "off"
+    // );
 
     const [chatHistory, setChatHistory] = useState(
         localStorage.getItem("nexus_chat_history") !== "off"
@@ -57,16 +57,16 @@ function Profile() {
         .charAt(0)
         .toUpperCase();
 
-    const handleNotifications = () => {
-        const newValue = !notifications;
+    // const handleNotifications = () => {
+    //     const newValue = !notifications;
 
-        setNotifications(newValue);
+    //     setNotifications(newValue);
 
-        localStorage.setItem(
-            "nexus_notifications",
-            newValue ? "on" : "off"
-        );
-    };
+    //     localStorage.setItem(
+    //         "nexus_notifications",
+    //         newValue ? "on" : "off"
+    //     );
+    // };
 
     const handleChatHistory = () => {
         const newValue = !chatHistory;
@@ -121,7 +121,6 @@ function Profile() {
                         ✦
                     </div>
 
-                    <span>Nexus</span>
                 </div>
 
             </header>
@@ -159,18 +158,18 @@ function Profile() {
 
                 </section>
 
-                {/* Nexus Personalization Card */}
-                <section className="nexus-profile-card">
+                {/* Personalization Card */}
+                <section className="profile-card">
 
-                    <div className="nexus-profile-card-left">
+                    <div className="profile-card-left">
 
-                        <div className="nexus-profile-icon">
+                        <div className="profile-icon">
                             ✦
                         </div>
 
                         <div>
                             <span>
-                                YOUR NEXUS PROFILE
+                                YOUR PROFILE
                             </span>
 
                             <h2>
@@ -178,7 +177,7 @@ function Profile() {
                             </h2>
 
                             <p>
-                                Nexus uses your academic details
+                                This uses your academic details
                                 to give you more relevant timetable
                                 and campus answers.
                             </p>
@@ -186,7 +185,7 @@ function Profile() {
 
                     </div>
 
-                    <div className="nexus-profile-details">
+                    <div className="profile-details">
 
                         <div className="profile-detail-pill">
                             <span>SEMESTER</span>
@@ -277,7 +276,7 @@ function Profile() {
                             <h2>Account</h2>
 
                             <p>
-                                Your Nexus account information
+                                Your account information
                             </p>
                         </div>
 
@@ -319,7 +318,7 @@ function Profile() {
                             <h2>Preferences</h2>
 
                             <p>
-                                Customize your Nexus experience
+                                Customize your experience
                             </p>
                         </div>
 
@@ -327,7 +326,7 @@ function Profile() {
 
                     <div className="preferences-card">
 
-                        {/* Notifications */}
+                        {/* Notifications
                         <div className="preference-item">
 
                             <div className="preference-left">
@@ -367,7 +366,7 @@ function Profile() {
                                 <span></span>
                             </button>
 
-                        </div>
+                        </div> */}
 
                         {/* Chat History */}
                         <div className="preference-item">

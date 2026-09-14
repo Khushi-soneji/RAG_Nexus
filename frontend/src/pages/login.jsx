@@ -96,7 +96,7 @@ function Login() {
       } else {
 
         setError(
-          "Unable to connect to Nexus."
+          "Unable to connect to interface."
         );
 
       }
@@ -155,7 +155,7 @@ function Login() {
             </div>
 
             <span>
-              Nexus
+              
             </span>
 
           </div>
