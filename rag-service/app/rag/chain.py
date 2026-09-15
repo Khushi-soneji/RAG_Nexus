@@ -31,9 +31,15 @@ def generate_answer(question):
     for result in results:
         document = result["document"]
         source = result["metadata"]["source"]
+        page = result["metadata"]["page"]
+        start_line = result["metadata"]["start_line"]
+        end_page = result["metadata"]["end_page"]
+        end_line = result["metadata"]["end_line"]
 
         context_parts.append(
             f"Source: {source}\n"
+            f"Pages: {page}-{end_page}\n"
+            f"Lines: {start_line}-{end_line}\n"
             f"Content:\n{document}"
         )
 
@@ -80,8 +86,12 @@ Answer:
         if not answer.startswith(
             "I could not find this information"
         ):
-            answer += f"\n\nSource: {results[0]['metadata']['source']}"
-
+            metadata = results[0]["metadata"]
+            answer += (
+                f"\n\nSource: {metadata['source']}"
+                f"\nPages: {metadata['page']}-{metadata['end_page']}"
+                f"\nLines: {metadata['start_line']}-{metadata['end_line']}"
+            )
         return answer
 
     # 5. Gemini quota/error fallback
@@ -91,6 +101,10 @@ Answer:
 
         document = results[0]["document"].strip()
         source = results[0]["metadata"]["source"]
+        page = results[0]["metadata"]["page"]
+        start_line = results[0]["metadata"]["start_line"]
+        end_page = results[0]["metadata"]["end_page"]
+        end_line = results[0]["metadata"]["end_line"]
 
         # --------------------------------------------------
         # SPECIAL FALLBACK FOR EVEN SEMESTER QUESTION
@@ -114,6 +128,8 @@ Answer:
                 return (
                     f"The Even Semester commences on {date}."
                     f"\n\nSource: {source}"
+                    f"\nPages: {page}-{end_page}"
+                    f"\nLines: {start_line}-{end_line}"
                 )
 
         # --------------------------------------------------
@@ -121,10 +137,12 @@ Answer:
         # --------------------------------------------------
 
         return (
-            "Based on the available college document:\n\n"
-            + document
-            + f"\n\nSource: {source}"
-        )
+    "Based on the available college document:\n\n"
+    + document
+    + f"\n\nSource: {source}"
+    + f"\nPages: {page}-{end_page}"
+    + f"\nLines: {start_line}-{end_line}"
+)
 
 
 if __name__ == "__main__":

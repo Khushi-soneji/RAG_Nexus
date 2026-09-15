@@ -31,15 +31,14 @@ def store_document(file_path):
 
     print("Loading document...")
 
-    text = load_document(file_path)
+    pages = load_document(file_path)
 
     print(
-        "Characters extracted:",
-        len(text)
+        "Pages extracted:",
+        len(pages)
     )
 
-
-    if not text.strip():
+    if not pages:
 
         raise ValueError(
             "No text could be extracted from the document."
@@ -52,7 +51,7 @@ def store_document(file_path):
 
     print("Splitting document...")
 
-    chunks = split_text(text)
+    chunks = split_text(pages)
 
     print(
         "Chunks created:",
@@ -60,21 +59,38 @@ def store_document(file_path):
     )
 
 
+    if not chunks:
+
+        raise ValueError(
+            "No chunks were created from the document."
+        )
+
+
     # -------------------------------------
-    # 3. Create embeddings
+    # 3. Extract chunk text
+    # -------------------------------------
+
+    chunk_texts = [
+        chunk["text"]
+        for chunk in chunks
+    ]
+
+
+    # -------------------------------------
+    # 4. Create embeddings
     # -------------------------------------
 
     print("Creating embeddings...")
 
     embeddings = create_embeddings(
-        chunks
+        chunk_texts
     )
 
     print("Embeddings created.")
 
 
     # -------------------------------------
-    # 4. Document information
+    # 5. Document information
     # -------------------------------------
 
     filename = os.path.basename(
@@ -83,7 +99,7 @@ def store_document(file_path):
 
 
     # -------------------------------------
-    # 5. Create unique IDs
+    # 6. Create unique IDs
     # -------------------------------------
 
     existing_count = collection.count()
@@ -95,30 +111,34 @@ def store_document(file_path):
 
 
     # -------------------------------------
-    # 6. Metadata
+    # 7. Metadata
     # -------------------------------------
 
     metadatas = [
 
         {
             "source": filename,
-            "file": filename
+            "file": filename,
+            "page": chunk["page"],
+            "start_line": chunk["start_line"],
+            "end_page": chunk["end_page"],
+            "end_line": chunk["end_line"]
         }
 
-        for _ in chunks
+        for chunk in chunks
 
     ]
 
 
     # -------------------------------------
-    # 7. Store in ChromaDB
+    # 8. Store in ChromaDB
     # -------------------------------------
 
     collection.add(
 
         ids=ids,
 
-        documents=chunks,
+        documents=chunk_texts,
 
         embeddings=embeddings.tolist(),
 
@@ -136,7 +156,7 @@ def store_document(file_path):
 
         "filename": filename,
 
-        "characters": len(text),
+        "pages": len(pages),
 
         "chunks": len(chunks)
 

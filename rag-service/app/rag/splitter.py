@@ -1,4 +1,93 @@
-def split_text(text, chunk_size=700, chunk_overlap=100):
+def split_text(pages, chunk_size=700, chunk_overlap=100):
+
+    chunks = []
+
+    current_chunk = []
+    current_length = 0
+
+    chunk_start_page = None
+    chunk_start_line = None
+    chunk_end_page = None
+    chunk_end_line = None
+
+    for page_data in pages:
+
+        page_number = page_data["page"]
+        lines = page_data["lines"]
+
+        for line_number, line in enumerate(lines, start=1):
+
+            line = line.strip()
+
+            if not line:
+                continue
+
+            line_length = len(line)
+
+            # Start tracking the location of this chunk
+            if not current_chunk:
+                chunk_start_page = page_number
+                chunk_start_line = line_number
+
+            # If adding this line exceeds the chunk size
+            if current_length + line_length + 1 > chunk_size:
+
+                if current_chunk:
+
+                    chunks.append({
+                        "text": "\n".join(
+                            current_chunk
+                        ),
+                        "page": chunk_start_page,
+                        "start_line": chunk_start_line,
+                        "end_page": chunk_end_page,
+                        "end_line": chunk_end_line
+                    })
+
+                # Create overlap
+                overlap_lines = []
+                overlap_length = 0
+
+                for previous_line in reversed(current_chunk):
+
+                    if overlap_length + len(previous_line) > chunk_overlap:
+                        break
+
+                    overlap_lines.insert(
+                        0,
+                        previous_line
+                    )
+
+                    overlap_length += len(previous_line) + 1
+
+                current_chunk = overlap_lines
+                current_length = overlap_length
+
+                # The new chunk starts at the current line
+                chunk_start_page = page_number
+                chunk_start_line = line_number
+
+            current_chunk.append(line)
+
+            current_length += line_length + 1
+
+            chunk_end_page = page_number
+            chunk_end_line = line_number
+
+    # Add final chunk
+    if current_chunk:
+
+        chunks.append({
+            "text": "\n".join(
+                current_chunk
+            ),
+            "page": chunk_start_page,
+            "start_line": chunk_start_line,
+            "end_page": chunk_end_page,
+            "end_line": chunk_end_line
+        })
+
+    return chunks
 
     text = text.replace("\r", "")
 

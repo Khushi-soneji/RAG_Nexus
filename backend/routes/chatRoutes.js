@@ -634,6 +634,160 @@ async function handleTimetableQuestion(question, studentId) {
     return answer;
 }
 
+async function handleHolidayQuestion(question) {
+
+    const lowerQuestion = question.toLowerCase();
+
+    const holidayKeywords = [
+        "holiday",
+        "holidays",
+        "vacation",
+        "holiday list"
+    ];
+
+    const isHolidayQuestion = holidayKeywords.some(
+        keyword => lowerQuestion.includes(keyword)
+    );
+
+    if (!isHolidayQuestion) {
+        return null;
+    }
+
+    // --------------------------------------------------
+    // 1. Check for a specific date: DD Month YYYY
+    // Example: 15 September 2026
+    // --------------------------------------------------
+
+    const dateMatch = lowerQuestion.match(
+        /(\d{1,2})\s+(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})/
+    );
+
+    const monthNames = {
+        january: 1,
+        february: 2,
+        march: 3,
+        april: 4,
+        may: 5,
+        june: 6,
+        july: 7,
+        august: 8,
+        september: 9,
+        october: 10,
+        november: 11,
+        december: 12
+    };
+
+    // --------------------------------------------------
+    // 2. If a specific date is found, check that date
+    // --------------------------------------------------
+
+    if (dateMatch) {
+
+        const day = parseInt(dateMatch[1]);
+        const month = monthNames[dateMatch[2]];
+        const year = parseInt(dateMatch[3]);
+
+        const result = await pool.query(
+            `
+            SELECT holiday_date, end_date, holiday_name
+            FROM holidays
+            WHERE $1::date BETWEEN holiday_date AND end_date
+            ORDER BY holiday_date
+            `,
+            [`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`]
+        );
+
+        if (result.rows.length === 0) {
+            return `There is no holiday recorded for ${day} ${dateMatch[2]} ${year}.`;
+        }
+
+        const row = result.rows[0];
+
+        const formattedStart = row.holiday_date
+            .toLocaleDateString("en-GB");
+
+        const formattedEnd = row.end_date
+            ? row.end_date.toLocaleDateString("en-GB")
+            : null;
+
+        if (formattedEnd && formattedStart !== formattedEnd) {
+
+            return `Yes, ${day} ${dateMatch[2]} ${year} falls during the ${row.holiday_name} holiday period (${formattedStart} to ${formattedEnd}).`;
+
+        }
+
+        return `Yes, there is a holiday for ${row.holiday_name} on ${formattedStart}.`;
+    }
+
+    // --------------------------------------------------
+    // 3. No specific date → check whether a month is mentioned
+    // --------------------------------------------------
+
+    let month = null;
+    let monthNameFound = null;
+
+    for (const monthName in monthNames) {
+
+        if (lowerQuestion.includes(monthName)) {
+
+            month = monthNames[monthName];
+            monthNameFound = monthName;
+            break;
+        }
+    }
+
+    // --------------------------------------------------
+    // 4. If a month is mentioned, return holidays for month
+    // --------------------------------------------------
+
+    if (month) {
+
+        const result = await pool.query(
+            `
+            SELECT holiday_date, end_date, holiday_name
+            FROM holidays
+            WHERE EXTRACT(MONTH FROM holiday_date) = $1
+            ORDER BY holiday_date
+            `,
+            [month]
+        );
+
+        if (result.rows.length === 0) {
+            return `No holidays were found for ${monthNameFound} in the college holiday database.`;
+        }
+
+        let answer = `Holidays in ${monthNameFound}:\n\n`;
+
+        result.rows.forEach(row => {
+
+            const formattedStart = row.holiday_date
+                .toLocaleDateString("en-GB");
+
+            const formattedEnd = row.end_date
+                ? row.end_date.toLocaleDateString("en-GB")
+                : null;
+
+            if (formattedEnd && formattedStart !== formattedEnd) {
+
+                answer += `- ${row.holiday_name}: ${formattedStart} to ${formattedEnd}\n`;
+
+            } else {
+
+                answer += `- ${row.holiday_name}: ${formattedStart}\n`;
+            }
+
+        });
+
+        return answer;
+    }
+
+    // --------------------------------------------------
+    // 5. Holiday question without date/month
+    // --------------------------------------------------
+
+    return null;
+}
+
 // Add a message to a chat
 router.post("/messages", async (req, res) => {
     try {
@@ -909,41 +1063,31 @@ router.post("/ask", async (req, res) => {
 
         if (!answer) {
 
+            const holidayAnswer = await handleHolidayQuestion(question);
             const labAnswer = await handleLabAvailability(question);
-
             const roomAnswer = await handleRoomQuestion(question);
 
             let timetableAnswer;
 
-            if (labAnswer) {
-
+            if (holidayAnswer) {
+                timetableAnswer = holidayAnswer;
+            } else if (labAnswer) {
                 timetableAnswer = labAnswer;
-
             } else if (roomAnswer) {
-
                 timetableAnswer = roomAnswer;
-
             } else if (isNextLectureQuestion) {
-
                 timetableAnswer = await handleNextLecture(student_id);
-
             } else {
-
                 timetableAnswer = await handleTimetableQuestion(
                     question,
                     student_id
                 );
-
             }
 
             if (timetableAnswer) {
-
                 answer = timetableAnswer;
-
             }
-
         }
-
 
         /* =========================================
         RAG FALLBACK

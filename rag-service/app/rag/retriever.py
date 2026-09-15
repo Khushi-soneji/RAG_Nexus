@@ -107,6 +107,10 @@ if __name__ == "__main__":
 
         print("Source:", result["metadata"]["source"])
         print("File:", result["metadata"]["file"])
+        print("Page:", result["metadata"]["page"])
+        print("Start line:", result["metadata"]["start_line"])
+        print("End page:", result["metadata"]["end_page"])
+        print("End line:", result["metadata"]["end_line"])
 
         print("\nDocument:")
         print(result["document"])
